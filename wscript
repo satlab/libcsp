@@ -203,7 +203,7 @@ def configure(ctx):
 	# Check for stdbool.h
 	ctx.check_cc(header_name='stdbool.h', mandatory=False, define_name='CSP_HAVE_STDBOOL_H', type='cstlib')
 
-	ctx.write_config_header('include/csp/csp_autoconfig.h', top=True, remove=True)
+	ctx.write_config_header('include/csp/csp_autoconfig.h')
 
 def build(ctx):
 
