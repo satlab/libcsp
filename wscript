@@ -89,9 +89,10 @@ def configure(ctx):
 		ctx.fatal('--with-loglevel must be either \'error\', \'warn\', \'info\' or \'debug\'')
 	
 	# Setup and validate toolchain
-	ctx.env.CC = ctx.options.toolchain + 'gcc'
-	ctx.env.AR = ctx.options.toolchain + 'ar'
-	ctx.env.SIZE = ctx.options.toolchain + 'size'
+	if not ctx.env.CC:
+		ctx.env.CC = ctx.options.toolchain + 'gcc'
+		ctx.env.AR = ctx.options.toolchain + 'ar'
+		ctx.env.SIZE = ctx.options.toolchain + 'size'
 	ctx.load('gcc')
 	ctx.find_program('size', var='SIZE')
 
