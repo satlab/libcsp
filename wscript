@@ -21,7 +21,7 @@
 
 import os
 
-APPNAME = 'libcsp'
+APPNAME = 'csp'
 VERSION = '1.0.1'
 
 top	= '.'
