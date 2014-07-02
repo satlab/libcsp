@@ -232,7 +232,7 @@ def build(ctx):
 		target = 'csp',
 		includes= ctx.env.INCLUDES_CSP,
 		export_includes = 'include',
-		use = 'csp_size include',
+		use = 'csp_size include freertos',
 		install_path = install_path,
 	)
 
