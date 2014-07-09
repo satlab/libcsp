@@ -31,8 +31,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <csp/csp.h>
 #include <csp/interfaces/csp_if_can.h>
+#include <csp/drivers/can.h>
 
-#include "can.h"
 #include "can_at91sam7a1.h"
 
 /* MOB segmentation */
@@ -68,7 +68,7 @@ can_controller_t * const CAN_CTRL = ((can_controller_t *) CAN_BASE_ADDRESS);
 static void can_isr(void);
 
 /** Setup CAN interrupts */
-static void can_init_interrupt(uint32_t id, uint32_t mask) {
+static void csp_can_init_interrupt(uint32_t id, uint32_t mask) {
 	uint8_t mbox;
 
 	/* Configure ISR */
@@ -107,7 +107,7 @@ static void can_init_interrupt(uint32_t id, uint32_t mask) {
 
 }
 
-int can_init(uint32_t id, uint32_t mask, can_tx_callback_t atxcb, can_rx_callback_t arxcb, struct csp_can_config *conf) {
+int csp_can_driver_init(uint32_t id, uint32_t mask, can_tx_callback_t atxcb, can_rx_callback_t arxcb, struct csp_can_config *conf) {
 
 	int i;
 
@@ -136,7 +136,7 @@ int can_init(uint32_t id, uint32_t mask, can_tx_callback_t atxcb, can_rx_callbac
 
 	/* The AT91SAM7A1 uses binary '1' to mark don't care bits */
 	mask = ~mask;
-	can_init_interrupt(id, mask);
+	csp_can_init_interrupt(id, mask);
 
 	/* Enable CAN in Control Register  */
 	CAN_CTRL->CR = CANEN;
@@ -145,7 +145,7 @@ int can_init(uint32_t id, uint32_t mask, can_tx_callback_t atxcb, can_rx_callbac
 
 }
 
-int can_send(can_id_t id, uint8_t data[], uint8_t dlc, CSP_BASE_TYPE * task_woken) {
+int csp_can_driver_send(can_id_t id, uint8_t data[], uint8_t dlc, CSP_BASE_TYPE * task_woken) {
 
 	int i, m = -1;
 	uint32_t temp[2];

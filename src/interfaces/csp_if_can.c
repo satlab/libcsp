@@ -55,7 +55,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <csp/arch/csp_queue.h>
 #include <csp/arch/csp_thread.h>
 
-#include "../drivers/can/can.h"
+#include <csp/drivers/can.h>
 
 /** CAN header macros */
 #define CFP_HOST_SIZE 	5
@@ -409,7 +409,7 @@ int csp_tx_callback(can_id_t canid, can_error_t error, CSP_BASE_TYPE *task_woken
 		buf->tx_count += bytes;
 
 		/* Send frame */
-		if (can_send(id, buf->packet->data + buf->tx_count - bytes, bytes, task_woken) != 0) {
+		if (csp_can_driver_send(id, buf->packet->data + buf->tx_count - bytes, bytes, task_woken) != 0) {
 			csp_log_warn("Failed to send CAN frame in Tx callback\r\n");
 			csp_if_can.tx_error++;
 			pbuf_free(buf, task_woken);
@@ -640,7 +640,7 @@ int csp_can_tx(csp_packet_t *packet, uint32_t timeout) {
 	csp_bin_sem_wait(&buf->tx_sem, 0);
 
 	/* Send frame */
-	if (can_send(id, frame_buf, overhead + bytes, NULL) != 0) {
+	if (csp_can_driver_send(id, frame_buf, overhead + bytes, NULL) != 0) {
 		csp_log_warn("Failed to send CAN frame in csp_tx_can\r\n");
 		return CSP_ERR_DRIVER;
 	}
@@ -700,7 +700,7 @@ int csp_can_init(uint8_t mode, struct csp_can_config *conf) {
 	}
 
 	/* Initialize CAN driver */
-	if (can_init(CFP_MAKE_DST(my_address), mask, csp_tx_callback, csp_rx_callback, conf) != 0) {
+	if (csp_can_driver_init(CFP_MAKE_DST(my_address), mask, csp_tx_callback, csp_rx_callback, conf) != 0) {
 		csp_log_error("Failed to initialize CAN driver\r\n");
 		return CSP_ERR_DRIVER;
 	}

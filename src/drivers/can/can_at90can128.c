@@ -31,8 +31,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <csp/csp.h>
 #include <csp/interfaces/csp_if_can.h>
+#include <csp/drivers/can.h>
 
-#include "can.h"
 #include "can_at90can128.h"
 
 /* MOB segmentation */
@@ -61,7 +61,7 @@ static uint32_t bitrate;
 /** List of mobs */
 static mbox_t mbox[CAN_TX_MOBS];
 
-void can_configure_mobs(void) {
+static void csp_can_configure_mobs(void) {
 
 	int mob;
 
@@ -85,7 +85,7 @@ void can_configure_mobs(void) {
 	}
 }
 
-int can_configure_bitrate(unsigned long int afcpu, uint32_t bps) {
+static int csp_can_configure_bitrate(unsigned long int afcpu, uint32_t bps) {
 
 	/* Set baud rate (500 kbps) */
 	if (bps != 500000) {
@@ -118,7 +118,7 @@ int can_configure_bitrate(unsigned long int afcpu, uint32_t bps) {
 
 }
 
-int can_reset(unsigned long int afcpu, uint32_t bps) {
+static int csp_can_reset(unsigned long int afcpu, uint32_t bps) {
 
 	/* Configure CAN module */
 	CAN_DISABLE();
@@ -142,7 +142,7 @@ int can_reset(unsigned long int afcpu, uint32_t bps) {
 
 }
 
-int can_init(uint32_t id, uint32_t mask, can_tx_callback_t atxcb, can_rx_callback_t arxcb, struct csp_can_config *conf) {
+int csp_can_driver_init(uint32_t id, uint32_t mask, can_tx_callback_t atxcb, can_rx_callback_t arxcb, struct csp_can_config *conf) {
 
 	csp_assert(conf && conf->bitrate && conf->clock_speed);
 
@@ -158,11 +158,11 @@ int can_init(uint32_t id, uint32_t mask, can_tx_callback_t atxcb, can_rx_callbac
 	clock_speed = conf->clock_speed;
 	bitrate = conf->bitrate;
 
-	return can_reset(clock_speed, bitrate);
+	return csp_can_reset(clock_speed, bitrate);
 
 }
 
-int can_send(can_id_t id, uint8_t data[], uint8_t dlc, CSP_BASE_TYPE * task_woken) {
+int csp_can_driver_send(can_id_t id, uint8_t data[], uint8_t dlc, CSP_BASE_TYPE * task_woken) {
 
 	int i, m = -1;
 
@@ -224,7 +224,7 @@ int can_send(can_id_t id, uint8_t data[], uint8_t dlc, CSP_BASE_TYPE * task_woke
  * Searches the CAN timestamp and returns the
  * can-mob with the oldest timestamp.
  */
-static inline uint8_t can_find_oldest_mob(void) {
+static inline uint8_t csp_can_find_oldest_mob(void) {
 
 	static uint8_t mob, mob_winner;
 	static uint16_t mob_time;
@@ -288,7 +288,7 @@ ISR(CANIT_vect) {
 	while (CAN_HPMOB() != 0xF) {
 
 		/* Locate MOB */
-		mob = can_find_oldest_mob();
+		mob = csp_can_find_oldest_mob();
 		CAN_SET_MOB(mob);
 
 		if (CANSTMOB & ERR_MOB_MSK) {

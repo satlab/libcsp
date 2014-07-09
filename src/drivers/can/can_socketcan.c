@@ -50,6 +50,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <csp/csp.h>
 #include <csp/interfaces/csp_if_can.h>
+#include <csp/drivers/can.h>
 
 #include "can.h"
 
@@ -165,7 +166,7 @@ static void * mbox_rx_thread(void * parameters) {
 
 }
 
-int can_mbox_init(void) {
+int csp_can_mbox_init(void) {
 
 	int i;
 	mbox_t * m;
@@ -197,7 +198,7 @@ int can_mbox_init(void) {
 
 }
 
-int can_send(can_id_t id, uint8_t data[], uint8_t dlc, CSP_BASE_TYPE * task_woken) {
+int csp_can_driver_send(can_id_t id, uint8_t data[], uint8_t dlc, CSP_BASE_TYPE * task_woken) {
 
 	int i, found = 0;
 	mbox_t * m;
@@ -237,7 +238,7 @@ int can_send(can_id_t id, uint8_t data[], uint8_t dlc, CSP_BASE_TYPE * task_woke
 
 }
 
-int can_init(uint32_t id, uint32_t mask, can_tx_callback_t atxcb, can_rx_callback_t arxcb, struct csp_can_config *conf) {
+int csp_can_driver_init(uint32_t id, uint32_t mask, can_tx_callback_t atxcb, can_rx_callback_t arxcb, struct csp_can_config *conf) {
 
 	struct ifreq ifr;
 	struct sockaddr_can addr;
@@ -287,7 +288,7 @@ int can_init(uint32_t id, uint32_t mask, can_tx_callback_t atxcb, can_rx_callbac
 	}
 
 	/* Create mailbox pool */
-	if (can_mbox_init() != 0) {
+	if (csp_can_mbox_init() != 0) {
 		csp_log_error("Failed to create tx thread pool\n");
 		return -1;
 	}

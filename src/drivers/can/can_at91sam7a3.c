@@ -34,8 +34,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <csp/csp.h>
 #include <csp/csp_endian.h>
 #include <csp/interfaces/csp_if_can.h>
+#include <csp/drivers/can.h>
 
-#include "can.h"
 #include "can_at91sam7a3.h"
 
 
@@ -81,7 +81,7 @@ volatile can_controller_t * volatile CAN_CTRL = ((can_controller_t *)CAN0_BASE_A
 static void can_isr(void);
 
 /** Setup CAN interrupts */
-static void can_init_interrupt(uint32_t id, uint32_t mask) {
+static void csp_can_init_interrupt(uint32_t id, uint32_t mask) {
 	uint8_t mbox;
 
 	/* Configure pins in PIO */
@@ -121,7 +121,7 @@ static void can_init_interrupt(uint32_t id, uint32_t mask) {
 	}
 }
 
-int can_init(uint32_t id, uint32_t mask, can_tx_callback_t atxcb, can_rx_callback_t arxcb, struct csp_can_config *conf) {
+int csp_can_driver_init(uint32_t id, uint32_t mask, can_tx_callback_t atxcb, can_rx_callback_t arxcb, struct csp_can_config *conf) {
 
 	csp_assert(conf && conf->bitrate && conf->clock_speed);
 
@@ -133,7 +133,7 @@ int can_init(uint32_t id, uint32_t mask, can_tx_callback_t atxcb, can_rx_callbac
 	CAN_CTRL->BR = CAN_MODE(conf->bitrate, conf->clock_speed);
 
 	/* Enable interrupts */
-	can_init_interrupt(id, mask);
+	csp_can_init_interrupt(id, mask);
 
 	/* Enable CAN in Control Register  */
 	CAN_CTRL->MR = CANEN;
@@ -146,7 +146,7 @@ int can_init(uint32_t id, uint32_t mask, can_tx_callback_t atxcb, can_rx_callbac
 
 }
 
-int can_send(can_id_t id, uint8_t data[], uint8_t dlc, CSP_BASE_TYPE * task_woken) {
+int csp_can_driver_send(can_id_t id, uint8_t data[], uint8_t dlc, CSP_BASE_TYPE * task_woken) {
 
 	int i, m = -1;
 	uint32_t temp[2];
