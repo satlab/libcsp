@@ -360,7 +360,7 @@ static void pbuf_cleanup(void) {
 
 int csp_tx_callback(can_id_t canid, can_error_t error, CSP_BASE_TYPE *task_woken) {
 
-	int bytes;
+	int bytes, remain;
 	uint8_t dest;
 
 	/* Match buffer element */
@@ -387,10 +387,13 @@ int csp_tx_callback(can_id_t canid, can_error_t error, CSP_BASE_TYPE *task_woken
 		return CSP_ERR_DRIVER;
 	}
 
+	/* Calculate remaining bytes */
+	remain = buf->packet->length - buf->tx_count;
+
 	/* Send next frame if not complete */
-	if (buf->tx_count < buf->packet->length) {
+	if (remain > 0) {
 		/* Calculate frame data bytes */
-		bytes = (buf->packet->length - buf->tx_count >= 8) ? 8 : buf->packet->length - buf->tx_count;
+		bytes = (remain >= 8) ? 8 : remain;
 
 		/* Insert destination node mac address into the CFP destination field */
 		dest = csp_route_get_nexthop_mac(buf->packet->id.dst);
@@ -403,7 +406,7 @@ int csp_tx_callback(can_id_t canid, can_error_t error, CSP_BASE_TYPE *task_woken
 		id |= CFP_MAKE_DST(dest);
 		id |= CFP_MAKE_ID(CFP_ID(canid));
 		id |= CFP_MAKE_TYPE(CFP_MORE);
-		id |= CFP_MAKE_REMAIN((buf->packet->length - buf->tx_count - bytes + 7) / 8);
+		id |= CFP_MAKE_REMAIN((remain - bytes + 7) / 8);
 
 		/* Increment tx counter */
 		buf->tx_count += bytes;
@@ -427,8 +430,7 @@ int csp_tx_callback(can_id_t canid, can_error_t error, CSP_BASE_TYPE *task_woken
 		}
 	}
 
-	return CSP_ERR_NONE;
-
+	return remain;
 }
 
 int csp_rx_callback(can_frame_t *frame, CSP_BASE_TYPE *task_woken) {
