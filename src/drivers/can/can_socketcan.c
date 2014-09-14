@@ -52,8 +52,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <csp/interfaces/csp_if_can.h>
 #include <csp/drivers/can.h>
 
-#include "can.h"
-
 /* Number of mailboxes */
 #define MBOX_NUM 5
 
