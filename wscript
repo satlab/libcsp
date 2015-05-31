@@ -227,7 +227,7 @@ def build(ctx):
 		ctx.install_files('${PREFIX}/include/csp', 'include/csp/csp_autoconfig.h', cwd=ctx.bldnode)
 
 	# Build static library
-	ctx.stlib(
+	ctx.objects(
 		source=ctx.path.ant_glob(ctx.env.FILES_CSP, excl=ctx.env.EXCL_CSP),
 		target = 'csp',
 		includes= ctx.env.INCLUDES_CSP,
