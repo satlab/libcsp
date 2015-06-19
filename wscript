@@ -92,9 +92,7 @@ def configure(ctx):
 	if not ctx.env.CC:
 		ctx.env.CC = ctx.options.toolchain + 'gcc'
 		ctx.env.AR = ctx.options.toolchain + 'ar'
-		ctx.env.SIZE = ctx.options.toolchain + 'size'
 	ctx.load('gcc')
-	ctx.find_program('size', var='SIZE')
 
 	# Set git revision define
 	git_rev = os.popen('git describe --always 2> /dev/null || echo unknown').read().strip()
@@ -232,19 +230,18 @@ def build(ctx):
 		target = 'csp',
 		includes= ctx.env.INCLUDES_CSP,
 		export_includes = 'include',
-		use = 'csp_size include freertos',
+		use = 'include freertos',
 		install_path = install_path,
 	)
-
-	# Print library size
-	if ctx.options.verbose > 0:
-		ctx(rule='${SIZE}  ${SRC}', source='libcsp.a', name='csp_size', always=True)
 
 	libs = []
 	if 'posix' in ctx.env.OS:
 		libs = ['rt', 'pthread']
 	elif 'macosx' in ctx.env.OS:
 		libs = ['pthread']
+
+	# Expore include
+	ctx(export_includes=ctx.env.INCLUDES_CSP, name='csp-include')
 
 	# Build shared library for Python bindings
 	if ctx.env.ENABLE_BINDINGS:
