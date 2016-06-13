@@ -55,6 +55,8 @@ def options(ctx):
     gr.add_option('--enable-dedup', action='store_true', help='Enable packet deduplicator')
     gr.add_option('--enable-external-debug', action='store_true', help='Enable external debug API')
     gr.add_option('--enable-debug-timestamp', action='store_true', help='Enable timestamps on debug/log')
+    gr.add_option('--enable-csperf', action='store_true', help='Enable CSP performance test functions')
+    gr.add_option('--enable-csperf-tool', action='store_true', help='Build CSP performance test tool')
 
     # Drivers and interfaces (requires external dependencies)
     gr.add_option('--enable-if-zmqhub', action='store_true', help='Enable ZMQ interface')
@@ -153,8 +155,14 @@ def configure(ctx):
     if ctx.options.enable_if_mcast:
         ctx.env.append_unique('FILES_CSP', 'src/interfaces/csp_if_mcast.c')
 
+    # Performance testing
+    if ctx.options.enable_csperf:
+        ctx.env.append_unique('FILES_CSP', 'src/perf/*.c')
+
     # Store configuration options
     ctx.env.ENABLE_EXAMPLES = ctx.options.enable_examples
+    ctx.env.ENABLE_CSPERF = ctx.options.enable_csperf
+    ctx.env.ENABLE_CSPERF_TOOL = ctx.options.enable_csperf_tool
 
     # Add Python bindings
     if ctx.options.enable_python3_bindings:
@@ -173,6 +181,7 @@ def configure(ctx):
     ctx.define('CSP_USE_QOS', ctx.options.enable_qos)
     ctx.define('CSP_USE_DEDUP', ctx.options.enable_dedup)
     ctx.define('CSP_USE_EXTERNAL_DEBUG', ctx.options.enable_external_debug)
+    ctx.define('CSP_USE_CSPERF', ctx.options.enable_csperf)
 
     # Set logging level
     ctx.define('CSP_LOG_LEVEL_DEBUG', ctx.options.with_loglevel in ('debug'))
@@ -235,6 +244,12 @@ def build(ctx):
                   use=['csp_shlib'],
                   lib=ctx.env.LIBS,
                   pytest_path=[ctx.path.get_bld()])
+
+    if ctx.env.ENABLE_CSPERF_TOOL:
+        ctx.program(source='utils/csperf.c',
+            target = 'csperf',
+            use = ['csp'],
+            lib = ctx.env.LIBS)
 
     if ctx.env.ENABLE_EXAMPLES:
         ctx.program(source='examples/csp_server_client.c',
