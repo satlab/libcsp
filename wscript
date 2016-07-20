@@ -55,6 +55,7 @@ def options(ctx):
     gr.add_option('--enable-if-kiss', action='store_true', help='Enable KISS/RS.232 interface')
     gr.add_option('--enable-if-can', action='store_true', help='Enable CAN interface')
     gr.add_option('--enable-if-zmqhub', action='store_true', help='Enable ZMQHUB interface')
+    gr.add_option('--enable-if-mcast', action='store_true', help='Enable IP multicast interface')
     
     # Drivers
     gr.add_option('--enable-can-socketcan', default=None, metavar='CHIP', help='Enable Linux socketcan driver')
@@ -157,6 +158,8 @@ def configure(ctx):
         ctx.env.append_unique('FILES_CSP', 'src/interfaces/csp_if_zmqhub.c')
         ctx.check_cfg(package='libzmq', args='--cflags --libs')
         ctx.env.append_unique('LIBS', ctx.env.LIB_LIBZMQ)
+    if ctx.options.enable_if_mcast:
+        ctx.env.append_unique('FILES_CSP', 'src/interfaces/csp_if_mcast.c')
 
     # Store configuration options
     ctx.env.ENABLE_BINDINGS = ctx.options.enable_bindings
