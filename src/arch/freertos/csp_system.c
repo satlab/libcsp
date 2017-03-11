@@ -33,10 +33,10 @@ extern void __attribute__((weak)) cpu_shutdown(void);
 
 int csp_sys_tasklist(char *out)
 {
-#if FREERTOS_VERSION < 8
-	vTaskList((signed portCHAR *) out);
-#else
+#if tskKERNEL_VERSION_MAJOR >= 8
 	vTaskList(out);
+#else
+	vTaskList((signed portCHAR *) out);
 #endif
 	return CSP_ERR_NONE;
 }
