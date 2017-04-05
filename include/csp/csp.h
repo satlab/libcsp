@@ -139,6 +139,15 @@ csp_packet_t *csp_read(csp_conn_t *conn, uint32_t timeout);
 int csp_send(csp_conn_t *conn, csp_packet_t *packet, uint32_t timeout);
 
 /**
+   Send a packet on an already established connection, but free it if transmission fails.
+   @param[in] conn connection
+   @param[in] packet packet to send
+   @param[in] timeout unused as of CSP version 1.6
+   @return returns 1 if successful and 0 otherwise. The packet MUST not be accessed after calling this function.
+ */
+int csp_send_free(csp_conn_t *conn, csp_packet_t *packet, uint32_t timeout);
+
+/**
    Change the default priority of the connection and send a packet.
    @note The priority of the connection will be changed. If you need to change it back, call csp_send_prio() again.
 

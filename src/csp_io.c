@@ -282,6 +282,17 @@ int csp_send(csp_conn_t * conn, csp_packet_t * packet, uint32_t timeout) {
 
 }
 
+int csp_send_free(csp_conn_t *conn, csp_packet_t *packet, uint32_t timeout)
+{
+	int ret;
+
+	ret = csp_send(conn, packet, timeout);
+	if (!ret)
+		csp_buffer_free(packet);
+
+	return ret;
+}
+
 int csp_send_prio(uint8_t prio, csp_conn_t * conn, csp_packet_t * packet, uint32_t timeout) {
 	conn->idout.pri = prio;
 	return csp_send(conn, packet, timeout);
