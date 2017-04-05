@@ -133,6 +133,15 @@ csp_packet_t *csp_read(csp_conn_t *conn, uint32_t timeout);
 int csp_send(csp_conn_t *conn, csp_packet_t *packet, uint32_t timeout);
 
 /**
+ * Send a packet on an already established connection, but free it if transmission fails.
+ * @param conn pointer to connection
+ * @param packet pointer to packet,
+ * @param timeout a timeout to wait for TX to complete. NOTE: not all underlying drivers supports flow-control.
+ * @return returns 1 if successful and 0 otherwise. The packet MUST not be accessed after calling this function.
+ */
+int csp_send_free(csp_conn_t *conn, csp_packet_t *packet, uint32_t timeout);
+
+/**
  * Send a packet on an already established connection, and change the default priority of the connection
  *
  * @note When using this function, the priority of the connection will change. If you need to change it back
