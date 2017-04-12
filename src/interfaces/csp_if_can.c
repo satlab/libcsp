@@ -464,7 +464,7 @@ int csp_can_tx(csp_iface_t *interface, csp_packet_t *packet, uint32_t timeout)
 		bytes = (packet->length - tx_count >= 8) ? 8 : packet->length - tx_count;
 
 		/* Prepare identifier */
-		can_id_t id = 0;
+		id = 0;
 		id |= CFP_MAKE_SRC(packet->id.src);
 		id |= CFP_MAKE_DST(dest);
 		id |= CFP_MAKE_ID(ident);
