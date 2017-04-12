@@ -52,8 +52,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 static uint8_t csp_my_address;
 
 /* Hostname, model and build revision */
-static const char *csp_hostname = NULL;
-static const char *csp_model = NULL;
+static const char *csp_hostname = "";
+static const char *csp_model = "";
 static const char *csp_revision = GIT_REV;
 
 #ifdef CSP_USE_PROMISC
