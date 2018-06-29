@@ -13,7 +13,7 @@ def init(testlib_file):
     testlib = testlib_file
 
 class CSPNode():
-    def __init__(self):
+    def __init__(self, addr):
         # Get function references from lib
         global testlib
 
@@ -25,6 +25,8 @@ class CSPNode():
         self._csp_ping = testlib.csp_ping
         self._csp_ping.argtypes = [ctypes.c_uint8, ctypes.c_uint32, ctypes.c_uint, ctypes.c_uint8]
         self._csp_ping.restype = ctypes.c_int
+
+        self.addr = addr
 
     def ping(self, timeout=1000, size=1, options=0):
         return self._csp_ping(self.addr, timeout, size, options)
