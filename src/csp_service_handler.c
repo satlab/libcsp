@@ -50,7 +50,6 @@ static csp_memcpy_fnc_t csp_cmp_memcpy_fnc = wrap_32bit_memcpy;
 static csp_memcpy_fnc_t csp_cmp_memcpy_fnc = (csp_memcpy_fnc_t) memcpy;
 #endif
 
-
 void csp_cmp_set_memcpy(csp_memcpy_fnc_t fnc) {
 	csp_cmp_memcpy_fnc = fnc;
 }
@@ -62,11 +61,11 @@ static int do_cmp_ident(struct csp_cmp_message *cmp) {
 	cmp->ident.revision[CSP_CMP_IDENT_REV_LEN - 1] = '\0';
 
 	/* Copy compilation date */
-	strncpy(cmp->ident.date, __DATE__, CSP_CMP_IDENT_DATE_LEN);
+	strncpy(cmp->ident.date, csp_get_build_date(), CSP_CMP_IDENT_DATE_LEN);
 	cmp->ident.date[CSP_CMP_IDENT_DATE_LEN - 1] = '\0';
 
 	/* Copy compilation time */
-	strncpy(cmp->ident.time, __TIME__, CSP_CMP_IDENT_TIME_LEN);
+	strncpy(cmp->ident.time, csp_get_build_time(), CSP_CMP_IDENT_TIME_LEN);
 	cmp->ident.time[CSP_CMP_IDENT_TIME_LEN - 1] = '\0';
 
 	/* Copy hostname */

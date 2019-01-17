@@ -96,6 +96,32 @@ void csp_set_revision(const char *revision);
  */
 const char *csp_get_revision(void);
 
+/** csp_set_build_date
+ * Set subsystem build date. This can be used to override the CMP ident date field.
+ * This function takes a pointer to a string, which should remain static
+ * @param date Build date to set
+ */
+void csp_set_build_date(const char *date);
+
+/** csp_get_build_date
+ * Get subsystem build date.
+ * @return Pointer to char array with subsystem build date.
+ */
+const char *csp_get_build_date(void);
+
+/** csp_set_build_time
+ * Set subsystem build time. This can be used to override the CMP ident time field.
+ * This function takes a pointer to a string, which should remain static
+ * @param time Build time to set
+ */
+void csp_set_build_time(const char *time);
+
+/** csp_get_build_time
+ * Get subsystem build time.
+ * @return Pointer to char array with subsystem build time.
+ */
+const char *csp_get_build_time(void);
+
 /** csp_socket
  * Create CSP socket endpoint
  * @param opts Socket options

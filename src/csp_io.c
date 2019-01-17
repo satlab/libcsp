@@ -56,6 +56,10 @@ static const char *csp_hostname = "";
 static const char *csp_model = "";
 static const char *csp_revision = GIT_REV;
 
+/* Build data and time */
+static const char *csp_build_date = __DATE__;
+static const char *csp_build_time = __TIME__;
+
 #ifdef CSP_USE_PROMISC
 extern csp_queue_handle_t csp_promisc_queue;
 #endif
@@ -98,6 +102,26 @@ void csp_set_revision(const char *revision)
 const char *csp_get_revision(void)
 {
 	return csp_revision;
+}
+
+void csp_set_build_date(const char *date)
+{
+	csp_build_date = date;
+}
+
+const char *csp_get_build_date(void)
+{
+	return csp_build_date;
+}
+
+void csp_set_build_time(const char *time)
+{
+	csp_build_time = time;
+}
+
+const char *csp_get_build_time(void)
+{
+	return csp_build_time;
 }
 
 int csp_init(unsigned char address) {
