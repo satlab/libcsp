@@ -21,148 +21,139 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <csp/drivers/usart.h>
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
 #include <pthread.h>
 #include <unistd.h>
-#include <errno.h>
 #include <termios.h>
 #include <fcntl.h>
 
 #include <csp/csp.h>
-#include <sys/time.h>
 
-int usart_stdio_id = 0;
-int fd;
-usart_callback_t usart_callback = NULL;
+static int csp_usart_fd;
+static csp_usart_callback_t csp_usart_callback = NULL;
 
-static void *serial_rx_thread(void *vptr_args);
+static void *serial_rx_thread(void *vptr_args)
+{
+	unsigned int length;
+	uint8_t cbuf[256];
 
-int getbaud(int fd) {
-	struct termios termAttr;
-	int inputSpeed = -1;
-	speed_t baudRate;
-	tcgetattr(fd, &termAttr);
-	/* Get the input speed. */
-	baudRate = cfgetispeed(&termAttr);
-	switch (baudRate) {
-	case B0:
-		inputSpeed = 0;
-		break;
-	case B50:
-		inputSpeed = 50;
-		break;
-	case B110:
-		inputSpeed = 110;
-		break;
-	case B134:
-		inputSpeed = 134;
-		break;
-	case B150:
-		inputSpeed = 150;
-		break;
-	case B200:
-		inputSpeed = 200;
-		break;
-	case B300:
-		inputSpeed = 300;
-		break;
-	case B600:
-		inputSpeed = 600;
-		break;
-	case B1200:
-		inputSpeed = 1200;
-		break;
-	case B1800:
-		inputSpeed = 1800;
-		break;
-	case B2400:
-		inputSpeed = 2400;
-		break;
-	case B4800:
-		inputSpeed = 4800;
-		break;
-	case B9600:
-		inputSpeed = 9600;
-		break;
-	case B19200:
-		inputSpeed = 19200;
-		break;
-	case B38400:
-		inputSpeed = 38400;
-		break;
-	case B57600:
-		inputSpeed = 57600;
-		break;
-	case B115200:
-		inputSpeed = 115200;
-		break;
-#ifndef CSP_MACOSX
-	case B460800:
-		inputSpeed = 460800;
-		break;
-	case B500000:
-		inputSpeed = 500000;
-		break;
-	case B921600:
-		inputSpeed = 921600;
-		break;
-	case B1000000:
-		inputSpeed = 1000000;
-		break;
-	case B1500000:
-		inputSpeed = 1500000;
-		break;
-	case B2000000:
-		inputSpeed = 2000000;
-		break;
-	case B2500000:
-		inputSpeed = 2500000;
-		break;
-	case B3000000:
-		inputSpeed = 3000000;
-		break;
-#endif
+	while (1) {
+		length = read(csp_usart_fd, cbuf, sizeof(cbuf));
+		if (length <= 0) {
+			perror("USART read error");
+			break;
+		}
+		if (csp_usart_callback)
+			csp_usart_callback(cbuf, length, NULL);
 	}
 
-	return inputSpeed;
-
+	return NULL;
 }
 
-void usart_init(struct usart_conf * conf) {
-
+int csp_usart_init(struct csp_usart_conf *conf)
+{
 	struct termios options;
 	pthread_t rx_thread;
+	int brate = 0;
 
-	fd = open(conf->device, O_RDWR | O_NOCTTY | O_NONBLOCK);
+	csp_usart_fd = open(conf->device, O_RDWR | O_NOCTTY | O_NONBLOCK);
+	if (csp_usart_fd < 0)
+		return CSP_ERR_DRIVER;
 
-	if (fd < 0) {
-		printf("Failed to open %s: %s\r\n", conf->device, strerror(errno));
-		return;
+	switch(conf->baudrate) {
+#ifdef B50
+	case 50:      brate = B50; break;
+#endif
+#ifdef B75
+	case 75:      brate = B75; break;
+#endif
+#ifdef B110
+	case 110:     brate = B110; break;
+#endif
+#ifdef B134
+	case 134:     brate = B134; break;
+#endif
+#ifdef B150
+	case 150:     brate = B150; break;
+#endif
+#ifdef B200
+	case 200:     brate = B200; break;
+#endif
+#ifdef B300
+	case 300:     brate = B300; break;
+#endif
+#ifdef B600
+	case 600:     brate = B600; break;
+#endif
+#ifdef B1200
+	case 1200:    brate = B1200; break;
+#endif
+#ifdef B1800
+	case 1800:    brate = B1800; break;
+#endif
+#ifdef B2400
+	case 2400:    brate = B2400; break;
+#endif
+#ifdef B4800
+	case 4800:    brate = B4800; break;
+#endif
+#ifdef B9600
+	case 9600:    brate = B9600; break;
+#endif
+#ifdef B19200
+	case 19200:   brate = B19200; break;
+#endif
+#ifdef B38400
+	case 38400:   brate = B38400; break;
+#endif
+#ifdef B57600
+	case 57600:   brate = B57600; break;
+#endif
+#ifdef B115200
+	case 115200:  brate = B115200; break;
+#endif
+#ifdef B230400
+	case 230400:  brate = B230400; break;
+#endif
+#ifdef B460800
+	case 460800:  brate = B460800; break;
+#endif
+#ifdef B500000
+	case 500000:  brate = B500000; break;
+#endif
+#ifdef B576000
+	case 576000:  brate = B576000; break;
+#endif
+#ifdef B921600
+	case 921600:  brate = B921600; break;
+#endif
+#ifdef B1000000
+	case 1000000: brate = B1000000; break;
+#endif
+#ifdef B1152000
+	case 1152000: brate = B1152000; break;
+#endif
+#ifdef B1500000
+	case 1500000: brate = B1500000; break;
+#endif
+#ifdef B2000000
+	case 2000000: brate = B2000000; break;
+#endif
+#ifdef B2500000
+	case 2500000: brate = B2500000; break;
+#endif
+#ifdef B3000000
+	case 3000000: brate = B3000000; break;
+#endif
+#ifdef B3500000
+	case 3500000: brate = B3500000; break;
+#endif
+#ifdef B4000000
+	case 4000000: brate = B4000000; break;
+#endif
+	default: return CSP_ERR_DRIVER;
 	}
 
-	int brate = 0;
-    switch(conf->baudrate) {
-    case 4800:    brate=B4800;    break;
-    case 9600:    brate=B9600;    break;
-    case 19200:   brate=B19200;   break;
-    case 38400:   brate=B38400;   break;
-    case 57600:   brate=B57600;   break;
-    case 115200:  brate=B115200;  break;
-#ifndef CSP_MACOSX
-    case 460800:  brate=B460800;  break;
-    case 500000:  brate=B500000;  break;
-    case 921600:  brate=B921600;  break;
-    case 1000000: brate=B1000000; break;
-    case 1500000: brate=B1500000; break;
-    case 2000000: brate=B2000000; break;
-    case 2500000: brate=B2500000; break;
-    case 3000000: brate=B3000000; break;
-#endif
-    }
-
-	tcgetattr(fd, &options);
+	tcgetattr(csp_usart_fd, &options);
 	cfsetispeed(&options, brate);
 	cfsetospeed(&options, brate);
 	options.c_cflag |= (CLOCAL | CREAD);
@@ -175,68 +166,28 @@ void usart_init(struct usart_conf * conf) {
 	options.c_oflag &= ~(OCRNL | ONLCR | ONLRET | ONOCR | OFILL | OPOST);
 	options.c_cc[VTIME] = 0;
 	options.c_cc[VMIN] = 1;
-	tcsetattr(fd, TCSANOW, &options);
-	if (tcgetattr(fd, &options) == -1)
-		perror("error setting options");
-	fcntl(fd, F_SETFL, 0);
+	tcsetattr(csp_usart_fd, TCSANOW, &options);
+	if (tcgetattr(csp_usart_fd, &options) == -1) {
+		perror("error setting USART options");
+		return CSP_ERR_DRIVER;
+	}
+	fcntl(csp_usart_fd, F_SETFL, 0);
 
 	/* Flush old transmissions */
-	if (tcflush(fd, TCIOFLUSH) == -1)
-		printf("Error flushing serial port - %s(%d).\n", strerror(errno), errno);
+	tcflush(csp_usart_fd, TCIOFLUSH);
 
 	if (pthread_create(&rx_thread, NULL, serial_rx_thread, NULL) != 0)
-		return;
+		return CSP_ERR_DRIVER;
 
+	return CSP_ERR_NONE;
 }
 
-void usart_set_callback(usart_callback_t callback) {
-	usart_callback = callback;
+void csp_usart_set_callback(csp_usart_callback_t callback)
+{
+	csp_usart_callback = callback;
 }
 
-void usart_insert(char c, void * pxTaskWoken) {
-	printf("%c", c);
-}
-
-void usart_putstr(char * buf, int len) {
-	if (write(fd, buf, len) != len)
-		return;
-}
-
-void usart_putc(char c) {
-	if (write(fd, &c, 1) != 1)
-		return;
-}
-
-char usart_getc(void) {
-	char c;
-	if (read(fd, &c, 1) != 1) return 0;
-	return c;
-}
-
-int usart_messages_waiting(int handle) {
-  struct timeval tv;
-  fd_set fds;
-  tv.tv_sec = 0;
-  tv.tv_usec = 0;
-  FD_ZERO(&fds);
-  FD_SET(STDIN_FILENO, &fds);
-  select(STDIN_FILENO+1, &fds, NULL, NULL, &tv);
-  return (FD_ISSET(0, &fds));
-}
-
-static void *serial_rx_thread(void *vptr_args) {
-	unsigned int length;
-	uint8_t * cbuf = malloc(100000);
-
-	// Receive loop
-	while (1) {
-		length = read(fd, cbuf, 300);
-		if (length <= 0) {
-			perror("Error: ");
-			exit(1);
-		}
-		if (usart_callback)
-			usart_callback(cbuf, length, NULL);
-	}
-	return NULL;
+void csp_usart_putc(char c)
+{
+	write(csp_usart_fd, &c, 1);
 }
