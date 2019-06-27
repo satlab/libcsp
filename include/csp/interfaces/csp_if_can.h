@@ -45,11 +45,13 @@ struct csp_can_config {
 
 /**
  * Init CAN interface
+ * @param stack_size The number of portStackType to allocate. This only affects FreeRTOS systems.
+ * @param priority The OS task priority of the router
  * @param mode Must be either CSP_CAN_MASKED or CSP_CAN_PROMISC
  * @param conf Pointer to configuration struct. 
  * @return 0 if CAN interface was successfully initialized, -1 otherwise
  */
-int csp_can_init(uint8_t mode, struct csp_can_config *conf);
+int csp_can_init(unsigned int stack_size, unsigned int priority, uint8_t mode, struct csp_can_config *conf);
 
 #ifdef __cplusplus
 } /* extern "C" */

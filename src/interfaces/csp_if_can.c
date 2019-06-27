@@ -487,7 +487,7 @@ int csp_can_tx(csp_iface_t *interface, csp_packet_t *packet, uint32_t timeout)
 	return CSP_ERR_NONE;
 }
 
-int csp_can_init(uint8_t mode, struct csp_can_config *conf)
+int csp_can_init(unsigned int stack_size, unsigned int priority, uint8_t mode, struct csp_can_config *conf)
 {
 	int ret;
 	uint32_t mask;
@@ -519,7 +519,7 @@ int csp_can_init(uint8_t mode, struct csp_can_config *conf)
 		return CSP_ERR_NOMEM;
 	}
 
-	ret = csp_thread_create(csp_can_rx_task, "CAN", 6000/sizeof(int), NULL, 3, &csp_can_rx_task_h);
+	ret = csp_thread_create(csp_can_rx_task, "CAN", stack_size, NULL, priority, &csp_can_rx_task_h);
 	if (ret != 0) {
 		csp_log_error("Failed to init CAN RX task");
 		return CSP_ERR_NOMEM;
