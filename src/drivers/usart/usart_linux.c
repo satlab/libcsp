@@ -26,6 +26,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <termios.h>
 #include <fcntl.h>
 
+#include <sys/ioctl.h>
+#include <linux/serial.h>
+
 #include <csp/csp.h>
 
 static int csp_usart_fd;
@@ -54,6 +57,9 @@ int csp_usart_init(struct csp_usart_conf *conf)
 	struct termios options;
 	pthread_t rx_thread;
 	int brate = 0;
+#ifdef ASYNC_LOW_LATENCY
+	struct serial_struct ss;
+#endif
 
 	csp_usart_fd = open(conf->device, O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if (csp_usart_fd < 0)
@@ -175,6 +181,14 @@ int csp_usart_init(struct csp_usart_conf *conf)
 
 	/* Flush old transmissions */
 	tcflush(csp_usart_fd, TCIOFLUSH);
+
+#ifdef ASYNC_LOW_LATENCY
+	/* Try to enable low latency */
+	if (ioctl(csp_usart_fd, TIOCGSERIAL, &ss) == 0) {
+		ss.flags |= ASYNC_LOW_LATENCY;
+		ioctl(csp_usart_fd, TIOCSSERIAL, &ss);
+	}
+#endif
 
 	if (pthread_create(&rx_thread, NULL, serial_rx_thread, NULL) != 0)
 		return CSP_ERR_DRIVER;
