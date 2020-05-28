@@ -59,7 +59,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define CSP_MCAST_PORT	17002
 
 /** Maximum Transmission Unit */
-#define CSP_MCAST_MTU 	256
+#define CSP_MCAST_MTU 	1024
 
 /* State */
 static int csp_mcast_socket;

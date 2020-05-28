@@ -114,6 +114,9 @@ static csp_thread_handle_t csp_can_rx_task_h;
 /* RX frame queue */
 static csp_queue_handle_t csp_can_rx_queue;
 
+/* CFP MTU */
+static unsigned int csp_can_mtu = CSP_CAN_MTU;
+
 /* Identification number */
 static int csp_can_id_init(void)
 {
@@ -306,7 +309,7 @@ static int csp_can_process_frame(can_frame_t *frame)
 			csp_if_can.frame++;
 		} else {
 			/* Allocate memory for frame */
-			buf->packet = csp_buffer_get(CSP_CAN_MTU);
+			buf->packet = csp_buffer_get(csp_can_mtu);
 			if (buf->packet == NULL) {
 				csp_log_error("Failed to get buffer for CSP_BEGIN packet");
 				csp_if_can.frame++;
@@ -491,6 +494,9 @@ int csp_can_init(unsigned int stack_size, unsigned int priority, uint8_t mode, s
 {
 	int ret;
 	uint32_t mask;
+
+	/* Save MTU */
+	csp_can_mtu = csp_if_can.mtu;
 
 	/* Initialize packet buffer */
 	if (csp_can_pbuf_init() != 0) {
