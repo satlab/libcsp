@@ -324,6 +324,13 @@ static int csp_can_process_frame(can_frame_t *frame)
 		memcpy(&(buf->packet->length), frame->data + sizeof(csp_id_t), sizeof(uint16_t));
 		buf->packet->length = csp_ntoh16(buf->packet->length);
 
+		/* Verify length */
+		if (buf->packet->length > csp_can_mtu) {
+			csp_if_can.frame++;
+			csp_can_pbuf_free(buf);
+			break;
+		}
+
 		/* Reset RX count */
 		buf->rx_count = 0;
 
