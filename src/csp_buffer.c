@@ -45,29 +45,31 @@ static unsigned int count, size;
 
 CSP_DEFINE_CRITICAL(csp_critical_lock);
 
-int csp_buffer_init(int buf_count, int buf_size) {
+int csp_buffer_init_static(int buf_size, void * buffer_pool, size_t buffer_pool_size) {
 
-	unsigned int i;
+	unsigned int i, skbfsize;
 	csp_skbf_t * buf;
 
-	count = buf_count;
-	size = buf_size + CSP_BUFFER_PACKET_OVERHEAD;
-	unsigned int skbfsize = (sizeof(csp_skbf_t) + size);
-	skbfsize = CSP_BUFFER_ALIGN * ((skbfsize + CSP_BUFFER_ALIGN - 1) / CSP_BUFFER_ALIGN);
-	unsigned int poolsize = count * skbfsize;
+	/* Verify buffer_pool alignment */
+	if ((uintptr_t)buffer_pool & (CSP_BUFFER_ALIGN - 1))
+		return CSP_ERR_INVAL;
 
-	csp_buffer_pool = csp_malloc(poolsize);
-	if (csp_buffer_pool == NULL)
-		goto fail_malloc;
+	size = buf_size + CSP_BUFFER_PACKET_OVERHEAD;
+	skbfsize = (sizeof(csp_skbf_t) + size);
+	skbfsize = CSP_BUFFER_ALIGN * ((skbfsize + CSP_BUFFER_ALIGN - 1) / CSP_BUFFER_ALIGN);
+	count = buffer_pool_size / skbfsize;
+	csp_buffer_pool = buffer_pool;
 
 	csp_buffers = csp_queue_create(count, sizeof(void *));
 	if (!csp_buffers)
-		goto fail_queue;
+		return CSP_ERR_NOMEM;
 
-	if (CSP_INIT_CRITICAL(csp_critical_lock) != CSP_ERR_NONE)
-		goto fail_critical;
+	if (CSP_INIT_CRITICAL(csp_critical_lock) != CSP_ERR_NONE) {
+		csp_queue_remove(csp_buffers);
+		return CSP_ERR_NOMEM;
+	}
 
-	memset(csp_buffer_pool, 0, poolsize);
+	memset(csp_buffer_pool, 0, buffer_pool_size);
 
 	for (i = 0; i < count; i++) {
 
@@ -85,13 +87,29 @@ int csp_buffer_init(int buf_count, int buf_size) {
 	}
 
 	return CSP_ERR_NONE;
+}
 
-fail_critical:
-	csp_queue_remove(csp_buffers);
-fail_queue:
-	csp_free(csp_buffer_pool);
-fail_malloc:
-	return CSP_ERR_NOMEM;
+int csp_buffer_init(int buf_count, int buf_size) {
+
+	int ret;
+	unsigned int skbfsize, poolsize;
+
+	size = buf_size + CSP_BUFFER_PACKET_OVERHEAD;
+	skbfsize = (sizeof(csp_skbf_t) + size);
+	skbfsize = CSP_BUFFER_ALIGN * ((skbfsize + CSP_BUFFER_ALIGN - 1) / CSP_BUFFER_ALIGN);
+	poolsize = buf_count * skbfsize;
+
+	csp_buffer_pool = csp_malloc(poolsize);
+	if (csp_buffer_pool == NULL)
+		return CSP_ERR_NOMEM;
+
+	ret = csp_buffer_init_static(buf_size, csp_buffer_pool, poolsize);
+	if (ret != CSP_ERR_NONE) {
+		csp_free(csp_buffer_pool);
+		return ret;
+	}
+
+	return CSP_ERR_NONE;
 
 }
 

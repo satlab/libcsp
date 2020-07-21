@@ -38,6 +38,23 @@ extern "C" {
 int csp_buffer_init(int count, int size);
 
 /**
+ * Start the buffer handling system with preallocated memory.
+ * You must specify the size of the buffers. The preallocated memory are is
+ * then divided into buffers of this size. All buffers are fixed size so you
+ * must specify the size of your largest buffer.
+ *
+ * This allows the buffers to be allocated in static memory or in a different
+ * memory region than the one used by csp_malloc().
+ *
+ * @param size Buffer size in bytes.
+ * @param buffer_pool Pointer to the preallocated memory area. Must be aligned to CSP_BUFFER_ALIGN.
+ * @param buffer_pool_size Size of the preallocated memory area in bytes.
+ *
+ * @return CSP_ERR_NONE if initialization succeeded, CSP_ERR message otherwise.
+ */
+int csp_buffer_init_static(int size, void * buffer_pool, size_t buffer_pool_size);
+
+/**
  * Get a reference to a free buffer. This function can only be called
  * from task context.
  *
