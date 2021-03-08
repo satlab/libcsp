@@ -57,8 +57,8 @@ static const char *csp_model = "";
 static const char *csp_revision = GIT_REV;
 
 /* Build data and time */
-static const char *csp_build_date = __DATE__;
-static const char *csp_build_time = __TIME__;
+static const char *csp_build_date = "";
+static const char *csp_build_time = "";
 
 #ifdef CSP_USE_PROMISC
 extern csp_queue_handle_t csp_promisc_queue;
