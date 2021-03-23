@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2017 Satlab Aps <satlab@satlab.com>
+# Copyright (c) 2016-2021 Satlab A/S <satlab@satlab.com>
 # All rights reserved. Do not distribute without permission.
 
 import os
