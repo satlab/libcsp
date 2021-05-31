@@ -203,7 +203,7 @@ def build(ctx):
     ctx(features=ctx.env.FEATURES,
         source=ctx.path.ant_glob(ctx.env.FILES_CSP),
         target='csp',
-        use=['csp_h', 'freertos_h', 'util'],
+        use=['csp_h', 'freertos_h'],
         install_path=install_path)
 
     # Build shared library
@@ -211,7 +211,7 @@ def build(ctx):
         ctx.shlib(source=ctx.path.ant_glob(ctx.env.FILES_CSP),
                   name='csp_shlib',
                   target='csp',
-                  use=['csp_h', 'util_shlib'],
+                  use=['csp_h'],
                   lib=ctx.env.LIBS)
 
     # Build Python bindings
