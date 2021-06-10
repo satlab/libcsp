@@ -98,6 +98,67 @@ static void pycsp_free_csp_socket(PyObject *obj) {
     PyCapsule_SetPointer(obj, &CSP_POINTER_HAS_BEEN_FREED);
 }
 
+/* CSPNode object */
+typedef struct {
+	PyObject_HEAD
+	uint8_t addr;
+} CSPNodeObject;
+
+static PyObject *CSPNode_ping(CSPNodeObject *self, PyObject *args, PyObject *kwds)
+{
+	int res;
+	uint32_t timeout = 1000;
+	unsigned int size = 10;
+	uint8_t options = CSP_O_NONE;
+
+	static char *kwlist[] = {"timeout", "size", "options", NULL};
+
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "|IIb", kwlist, &timeout, &size, &options))
+		return NULL;
+
+	Py_BEGIN_ALLOW_THREADS;
+	res = csp_ping(self->addr, timeout, size, options);
+	Py_END_ALLOW_THREADS;
+
+	if (res < 0)
+		return PyErr_Error("csp_ping()", res);
+
+	return Py_BuildValue("i", res);
+}
+
+static PyObject *CSPNode_reboot(CSPNodeObject *self, PyObject *args)
+{
+	csp_reboot(self->addr);
+	Py_RETURN_NONE;
+}
+
+static int CSPNode_init(CSPNodeObject *self, PyObject *args, PyObject *kwds)
+{
+	static char *kwlist[] = {"addr", NULL};
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist, &self->addr))
+		return -1;
+
+	return 0;
+}
+
+static PyMethodDef CSPNode_methods[] = {
+	{"ping",   (PyCFunction)CSPNode_ping,   METH_VARARGS | METH_KEYWORDS, "Ping node"},
+	{"reboot", (PyCFunction)CSPNode_reboot, METH_NOARGS,                  "Reboot node"},
+	{NULL}  /* Sentinel */
+};
+
+static PyTypeObject CSPNodeType = {
+	PyVarObject_HEAD_INIT(NULL, 0)
+	.tp_name = "csp.CSPNode",
+	.tp_doc = "CSPNode object",
+	.tp_basicsize = sizeof(CSPNodeObject),
+	.tp_itemsize = 0,
+	.tp_flags = Py_TPFLAGS_DEFAULT,
+	.tp_new = PyType_GenericNew,
+	.tp_init = (initproc) CSPNode_init,
+	.tp_methods = CSPNode_methods,
+};
+
 static PyObject* pycsp_service_handler(PyObject *self, PyObject *args) {
     PyObject* conn_capsule;
     PyObject* packet_capsule;
@@ -979,6 +1040,9 @@ static struct PyModuleDef moduledef = {
 
 PyMODINIT_FUNC PyInit_libcsp_py3(void) {
 
+    if (PyType_Ready(&CSPNodeType) < 0)
+        return NULL;
+
     PyObject * m = PyModule_Create(&moduledef);
 
     /* Exceptions */
@@ -987,6 +1051,14 @@ PyMODINIT_FUNC PyInit_libcsp_py3(void) {
 
     /* Add exception object to your module */
     PyModule_AddObject(m, "Error", Error);
+
+    /* Add CSPNode object */
+    Py_INCREF(&CSPNodeType);
+    if (PyModule_AddObject(m, "CSPNode", (PyObject *) &CSPNodeType) < 0) {
+        Py_DECREF(&CSPNodeType);
+        Py_DECREF(m);
+        return NULL;
+    }
 
     /* RESERVED PORTS */
     PyModule_AddIntConstant(m, "CSP_CMP", CSP_CMP);
