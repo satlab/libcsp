@@ -40,7 +40,8 @@ def options(ctx):
     gr.add_option('--install-csp', action='store_true', help='Installs CSP headers and lib')
 
     gr.add_option('--disable-output', action='store_true', help='Disable CSP output')
-    gr.add_option('--disable-stlib', action='store_true', help='Build objects only')
+    gr.add_option('--disable-stlib', action='store_true', help='Do not build static library')
+    gr.add_option('--enable-objects', action='store_true', help='Build object files')
     gr.add_option('--enable-shlib', action='store_true', help='Build shared library')
     gr.add_option('--enable-rdp', action='store_true', help='Enable RDP support')
     gr.add_option('--enable-rdp-fast-close', action='store_true', help='Enable fast close of RDP connections')
@@ -91,11 +92,9 @@ def configure(ctx):
     git_rev = os.popen('git describe --long --always 2> /dev/null || echo unknown').read().strip()
     ctx.define('GIT_REV', git_rev)
 
-    # Set build output format
-    ctx.env.FEATURES = ['c']
-    if not ctx.options.disable_stlib:
-        ctx.env.FEATURES += ['cstlib']
-
+    # Set build output formats
+    ctx.env.LIBCSP_OBJECTS = ctx.options.enable_objects
+    ctx.env.LIBCSP_STLIB = not ctx.options.disable_stlib
     ctx.env.LIBCSP_SHLIB = ctx.options.enable_shlib
 
     # Setup CFLAGS
@@ -200,11 +199,19 @@ def build(ctx):
 
     ctx(export_includes=ctx.env.INCLUDES_CSP, name='csp_h')
 
-    ctx(features=ctx.env.FEATURES,
-        source=ctx.path.ant_glob(ctx.env.FILES_CSP),
-        target='csp',
-        use=['csp_h', 'freertos_h'],
-        install_path=install_path)
+    # Build objects
+    if ctx.env.LIBCSP_OBJECTS:
+        ctx.objects(source=ctx.path.ant_glob(ctx.env.FILES_CSP),
+                    target='csp',
+                    use=['csp_h', 'freertos_h'],
+                    install_path=install_path)
+
+    # Build static library
+    if ctx.env.LIBCSP_STLIB:
+        ctx.stlib(source=ctx.path.ant_glob(ctx.env.FILES_CSP),
+                  target='csp',
+                  use=['csp_h', 'freertos_h'],
+                  install_path=install_path)
 
     # Build shared library
     if ctx.env.LIBCSP_SHLIB or ctx.env.LIBCSP_PYTHON3:
