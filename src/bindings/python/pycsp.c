@@ -22,11 +22,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <csp/csp.h>
 #include <csp/csp_cmp.h>
 #include <csp/crypto/csp_xtea.h>
-#include <csp/interfaces/csp_if_zmqhub.h>
 #include <csp/interfaces/csp_if_kiss.h>
 #include <csp/drivers/usart.h>
 #include <csp/drivers/can_socketcan.h>
 #include <csp/csp_endian.h>
+
+#ifdef CSP_HAVE_LIBZMQ
+#include <csp/interfaces/csp_if_zmqhub.h>
+#endif
 
 #define SOCKET_CAPSULE      "csp_socket_t"
 #define CONNECTION_CAPSULE  "csp_conn_t"
@@ -853,6 +856,7 @@ static PyObject* pycsp_cmp_clock_get(PyObject *self, PyObject *args) {
                          csp_ntoh32(msg.clock.tv_nsec));
 }
 
+#ifdef CSP_HAVE_LIBZMQ
 static PyObject* pycsp_zmqhub_init(PyObject *self, PyObject *args) {
     char addr;
     char* host;
@@ -867,6 +871,7 @@ static PyObject* pycsp_zmqhub_init(PyObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+#endif
 
 static PyObject* pycsp_can_socketcan_init(PyObject *self, PyObject *args) {
     char* ifc;
@@ -1007,8 +1012,12 @@ static PyMethodDef methods[] = {
     {"cmp_clock_set",       pycsp_cmp_clock_set,       METH_VARARGS, ""},
     {"cmp_clock_get",       pycsp_cmp_clock_get,       METH_VARARGS, ""},
 
+#ifdef CSP_HAVE_LIBZMQ
     /* csp/interfaces/csp_if_zmqhub.h */
     {"zmqhub_init",         pycsp_zmqhub_init,         METH_VARARGS, ""},
+#endif
+
+    /* csp/interfaces/csp_if_kiss.h */
     {"kiss_init",           pycsp_kiss_init,           METH_VARARGS, ""},
 
     /* csp/drivers/can_socketcan.h */
