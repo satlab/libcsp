@@ -1037,7 +1037,7 @@ static PyMethodDef methods[] = {
 
 static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
-    "libcsp_py3",
+    "csp",
     NULL,
     -1,
     methods,
@@ -1047,7 +1047,7 @@ static struct PyModuleDef moduledef = {
     NULL
 };
 
-PyMODINIT_FUNC PyInit_libcsp_py3(void) {
+PyMODINIT_FUNC PyInit_csp(void) {
 
     if (PyType_Ready(&CSPNodeType) < 0)
         return NULL;

@@ -223,8 +223,9 @@ def build(ctx):
 
     # Build Python bindings
     if ctx.env.LIBCSP_PYTHON3:
-        ctx.shlib(source=ctx.path.ant_glob('src/bindings/python/**/*.c'),
-                  target='csp_py3',
+        ctx.shlib(features='pyext',
+                  source=ctx.path.ant_glob('src/bindings/python/**/*.c'),
+                  target='csp',
                   includes=ctx.env.INCLUDES_PYTHON3,
                   use=['csp_shlib'],
                   lib=ctx.env.LIBS,

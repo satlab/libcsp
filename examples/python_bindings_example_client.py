@@ -15,7 +15,7 @@ import time
 import sys
 import argparse
 
-import libcsp_py3 as libcsp
+import csp
 
 
 def getOptions():
@@ -32,32 +32,32 @@ if __name__ == "__main__":
 
     options = getOptions()
 
-    libcsp.init(options.address, "host", "model", "1.2.3", 10, 300)
+    csp.init(options.address, "host", "model", "1.2.3", 10, 300)
 
     if options.can:
-        libcsp.can_socketcan_init(options.can)
+        csp.can_socketcan_init(options.can)
     if options.zmq:
-        libcsp.zmqhub_init(options.address, options.zmq)
-        libcsp.rtable_load("0/0 ZMQHUB")
+        csp.zmqhub_init(options.address, options.zmq)
+        csp.rtable_load("0/0 ZMQHUB")
     if options.routing_table:
-        libcsp.rtable_load(options.routing_table)
+        csp.rtable_load(options.routing_table)
 
-    libcsp.route_start_task()
+    csp.route_start_task()
     time.sleep(0.2)  # allow router task startup
 
     print("Connections:")
-    libcsp.print_connections()
+    csp.print_connections()
 
     print("Routes:")
-    libcsp.print_routes()
+    csp.print_routes()
 
-    print("CMP ident:", libcsp.cmp_ident(options.server_address))
+    print("CMP ident:", csp.cmp_ident(options.server_address))
 
-    print("Ping: %d mS" % libcsp.ping(options.server_address))
+    print("Ping: %d mS" % csp.ping(options.server_address))
 
     # transaction
     outbuf = bytearray().fromhex('01')
     inbuf = bytearray(1)
     print ("Exchange data with server using csp_transaction ...")
-    libcsp.transaction(0, options.server_address, 10, 1000, outbuf, inbuf)
+    csp.transaction(0, options.server_address, 10, 1000, outbuf, inbuf)
     print ("  got reply from server [%s]" % (''.join('{:02x}'.format(x) for x in inbuf)))
