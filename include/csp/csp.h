@@ -50,6 +50,8 @@ typedef struct csp_conf_s {
 	const char *hostname;		/**< Host name, returned by the #CSP_CMP_IDENT request */
 	const char *model;		/**< Model, returned by the #CSP_CMP_IDENT request */
 	const char *revision;		/**< Revision, returned by the #CSP_CMP_IDENT request */
+	const char *date;		/**< Build date, returned by the #CSP_CMP_IDENT request */
+	const char *time;		/**< Build time, returned by the #CSP_CMP_IDENT request */
 
 	uint8_t conn_max;		/**< Max number of connections. A fixed connection array is allocated by csp_init() */
 	uint8_t conn_queue_length;	/**< Max queue length (max queued Rx messages). */
@@ -69,6 +71,8 @@ static inline void csp_conf_get_defaults(csp_conf_t * conf) {
 	conf->hostname = "hostname";
 	conf->model = "model";
 	conf->revision = "revision";
+	conf->date = __DATE__;
+	conf->time = __TIME__;
 	conf->conn_max = 10;
 	conf->conn_queue_length = 10;
 	conf->fifo_length = 25;
