@@ -189,12 +189,27 @@ static void copy_string(const char * from, char * to, size_t size_to) {
     }
 }
 
-static PyObject* pycsp_init(PyObject *self, PyObject *args) {
+static PyObject* pycsp_init(PyObject *self, PyObject *args, PyObject *kwds) {
 
     csp_conf_t conf;
     csp_conf_get_defaults(&conf);
 
-    if (!PyArg_ParseTuple(args, "bsssHH", &conf.address, &conf.hostname, &conf.model, &conf.revision, &conf.buffers, &conf.buffer_data_size)) {
+    static char *kwlist[] = {
+        "address",
+        "hostname",
+        "model",
+        "revision",
+        "buffers",
+        "buffer_data_size",
+        NULL
+    };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|bsssHH", kwlist,
+                                     &conf.address,
+                                     &conf.hostname,
+                                     &conf.model,
+                                     &conf.revision,
+                                     &conf.buffers,
+                                     &conf.buffer_data_size)) {
         return NULL; // TypeError is thrown
     }
 
@@ -966,7 +981,7 @@ static PyMethodDef methods[] = {
 
     /* csp/csp.h */
     {"service_handler",     pycsp_service_handler,     METH_VARARGS, ""},
-    {"init",                pycsp_init,                METH_VARARGS, ""},
+    {"init",                (PyCFunction)pycsp_init,   METH_VARARGS | METH_KEYWORDS, ""},
     {"get_hostname",        pycsp_get_hostname,        METH_NOARGS,  ""},
     {"get_model",           pycsp_get_model,           METH_NOARGS,  ""},
     {"get_revision",        pycsp_get_revision,        METH_NOARGS,  ""},
