@@ -31,6 +31,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <csp/interfaces/csp_if_zmqhub.h>
 #endif
 
+#ifdef CSP_USE_IF_SLGND
+#include <csp/interfaces/csp_if_slgnd.h>
+#endif
+
 #define SOCKET_CAPSULE      "csp_socket_t"
 #define CONNECTION_CAPSULE  "csp_conn_t"
 #define PACKET_CAPSULE      "csp_packet_t"
@@ -888,6 +892,23 @@ static PyObject* pycsp_zmqhub_init(PyObject *self, PyObject *args) {
 }
 #endif
 
+#ifdef CSP_USE_IF_SLGND
+static PyObject* pycsp_slgnd_init(PyObject *self, PyObject *args) {
+    const char *host;
+    const char *ifname = NULL;
+    if (!PyArg_ParseTuple(args, "s|s", &host, &ifname)) {
+        return NULL; // TypeError is thrown
+    }
+
+    int res = csp_slgnd_init(host, ifname, NULL);
+    if (res != CSP_ERR_NONE) {
+        return PyErr_Error("csp_slgnd_init()", res);
+    }
+
+    Py_RETURN_NONE;
+}
+#endif
+
 static PyObject* pycsp_can_socketcan_init(PyObject *self, PyObject *args) {
     char* ifc;
     int bitrate = 1000000;
@@ -1030,6 +1051,11 @@ static PyMethodDef methods[] = {
 #ifdef CSP_HAVE_LIBZMQ
     /* csp/interfaces/csp_if_zmqhub.h */
     {"zmqhub_init",         pycsp_zmqhub_init,         METH_VARARGS, ""},
+#endif
+
+#ifdef CSP_USE_IF_SLGND
+    /* csp/interfaces/csp_if_slgnd.h */
+    {"slgnd_init",          pycsp_slgnd_init,          METH_VARARGS, ""},
 #endif
 
     /* csp/interfaces/csp_if_kiss.h */
