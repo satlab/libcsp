@@ -62,6 +62,7 @@ def options(ctx):
     gr.add_option('--enable-if-zmqhub', action='store_true', help='Enable ZMQ interface')
     gr.add_option('--enable-if-mcast', action='store_true', help='Enable IP multicast interface')
     gr.add_option('--enable-if-slgnd', action='store_true', help='Enable Satlab Ground Station interface')
+    gr.add_option('--enable-if-sludp', action='store_true', help='Enable Satlab UDP interface')
     gr.add_option('--enable-can-socketcan', action='store_true', help='Enable Linux socketcan driver')
     gr.add_option('--with-driver-usart', default=None, metavar='DRIVER',
                   help='Build USART driver. [windows, linux, None]')
@@ -160,6 +161,10 @@ def configure(ctx):
     if ctx.options.enable_if_slgnd:
         ctx.env.append_unique('FILES_CSP', 'src/interfaces/csp_if_slgnd.c')
 
+    # Add SLUDP
+    if ctx.options.enable_if_sludp:
+        ctx.env.append_unique('FILES_CSP', 'src/interfaces/csp_if_sludp.c')
+
     # Performance testing
     if ctx.options.enable_csperf:
         ctx.env.append_unique('FILES_CSP', 'src/perf/*.c')
@@ -188,6 +193,7 @@ def configure(ctx):
     ctx.define('CSP_USE_EXTERNAL_DEBUG', ctx.options.enable_external_debug)
     ctx.define('CSP_USE_CSPERF', ctx.options.enable_csperf)
     ctx.define('CSP_USE_IF_SLGND', ctx.options.enable_if_slgnd)
+    ctx.define('CSP_USE_IF_SLUDP', ctx.options.enable_if_sludp)
 
     # Set logging level
     ctx.define('CSP_LOG_LEVEL_DEBUG', ctx.options.with_loglevel in ('debug'))

@@ -35,6 +35,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <csp/interfaces/csp_if_slgnd.h>
 #endif
 
+#ifdef CSP_USE_IF_SLUDP
+#include <csp/interfaces/csp_if_sludp.h>
+#endif
+
 #define SOCKET_CAPSULE      "csp_socket_t"
 #define CONNECTION_CAPSULE  "csp_conn_t"
 #define PACKET_CAPSULE      "csp_packet_t"
@@ -909,6 +913,23 @@ static PyObject* pycsp_slgnd_init(PyObject *self, PyObject *args) {
 }
 #endif
 
+#ifdef CSP_USE_IF_SLUDP
+static PyObject* pycsp_sludp_init(PyObject *self, PyObject *args) {
+    const char *device;
+    const char *ifname = NULL;
+    if (!PyArg_ParseTuple(args, "s|s", &device, &ifname)) {
+        return NULL; // TypeError is thrown
+    }
+
+    int res = csp_sludp_init(device, ifname, NULL);
+    if (res != CSP_ERR_NONE) {
+        return PyErr_Error("csp_sludp_init()", res);
+    }
+
+    Py_RETURN_NONE;
+}
+#endif
+
 static PyObject* pycsp_can_socketcan_init(PyObject *self, PyObject *args) {
     char* ifc;
     int bitrate = 1000000;
@@ -1056,6 +1077,11 @@ static PyMethodDef methods[] = {
 #ifdef CSP_USE_IF_SLGND
     /* csp/interfaces/csp_if_slgnd.h */
     {"slgnd_init",          pycsp_slgnd_init,          METH_VARARGS, ""},
+#endif
+
+#ifdef CSP_USE_IF_SLUDP
+    /* csp/interfaces/csp_if_sludp.h */
+    {"sludp_init",          pycsp_sludp_init,          METH_VARARGS, ""},
 #endif
 
     /* csp/interfaces/csp_if_kiss.h */
