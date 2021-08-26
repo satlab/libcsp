@@ -18,6 +18,7 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <csp/csp.h>
 #include <csp/csp_cmp.h>
@@ -987,10 +988,11 @@ static PyObject* pycsp_packet_set_data(PyObject *self, PyObject *args) {
 
 static PyObject* pycsp_packet_get_data(PyObject *self, PyObject *packet_capsule) {
     csp_packet_t * packet = get_obj_as_packet(packet_capsule, false);
+    Py_ssize_t length = packet->length;
     if (packet == NULL) {
         return NULL; // TypeError is thrown
     }
-    return Py_BuildValue("y#", packet->data, packet->length);
+    return Py_BuildValue("y#", packet->data, length);
 }
 
 static PyObject* pycsp_packet_get_length(PyObject *self, PyObject *packet_capsule) {
