@@ -208,17 +208,33 @@ static PyObject* pycsp_init(PyObject *self, PyObject *args, PyObject *kwds) {
         "hostname",
         "model",
         "revision",
+        "date",
+        "time",
+        "conn_max",
+        "conn_queue_length",
+        "fifo_length",
+        "port_max_bind",
+        "rdp_max_window",
         "buffers",
         "buffer_data_size",
+        "conn_dfl_so",
         NULL
     };
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|bsssHH", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|bsssssBBBBBHHI", kwlist,
                                      &conf.address,
                                      &conf.hostname,
                                      &conf.model,
                                      &conf.revision,
+                                     &conf.date,
+                                     &conf.time,
+                                     &conf.conn_max,
+                                     &conf.conn_queue_length,
+                                     &conf.fifo_length,
+                                     &conf.port_max_bind,
+                                     &conf.rdp_max_window,
                                      &conf.buffers,
-                                     &conf.buffer_data_size)) {
+                                     &conf.buffer_data_size,
+                                     &conf.conn_dfl_so)) {
         return NULL; // TypeError is thrown
     }
 
@@ -226,14 +242,20 @@ static PyObject* pycsp_init(PyObject *self, PyObject *args, PyObject *kwds) {
     static char hostname[CSP_HOSTNAME_LEN + 1];
     static char model[CSP_MODEL_LEN + 1];
     static char revision[CSP_CMP_IDENT_REV_LEN + 1];
+    static char date[CSP_CMP_IDENT_DATE_LEN + 1];
+    static char time[CSP_CMP_IDENT_TIME_LEN + 1];
 
     copy_string(conf.hostname, hostname, sizeof(hostname));
     copy_string(conf.model, model, sizeof(model));
     copy_string(conf.revision, revision, sizeof(revision));
+    copy_string(conf.date, date, sizeof(date));
+    copy_string(conf.time, time, sizeof(time));
 
     conf.hostname = hostname;
     conf.model = model;
     conf.revision = revision;
+    conf.date = date;
+    conf.time = time;
     
     int res = csp_init(&conf);
     if (res != CSP_ERR_NONE) {
