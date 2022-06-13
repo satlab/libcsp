@@ -31,15 +31,31 @@ typedef struct {
 	csp_iface_t iface;
 	csp_kiss_interface_data_t ifdata;
 	csp_usart_fd_t fd;
+	unsigned char txbuf[512];
+	size_t txbuf_index;
 } kiss_context_t;
 
 static int kiss_driver_tx(void *driver_data, const unsigned char * data, size_t data_length) {
 
 	kiss_context_t * ctx = driver_data;
-	if (csp_usart_write(ctx->fd, data, data_length) == (int) data_length) {
-		return CSP_ERR_NONE;
+	size_t i, write_length;
+
+	for (i = 0; i < data_length; i++) {
+		/* Add byte to buffer */
+		ctx->txbuf[ctx->txbuf_index++] = data[i];
+
+		/* Flush buffer on overflow or FEND (except FEND in first byte since
+		 * every KISS transmission starts with a FEND to flush receiver) */
+		if (ctx->txbuf_index >= sizeof(ctx->txbuf) || (data[i] == 0xC0 && ctx->txbuf_index > 1)) {
+			write_length = ctx->txbuf_index;
+			ctx->txbuf_index = 0;
+			if (csp_usart_write(ctx->fd, ctx->txbuf, write_length) != (int) write_length) {
+				return CSP_ERR_TX;
+			}
+		}
 	}
-	return CSP_ERR_TX;
+
+	return CSP_ERR_NONE;
 }
 
 static void kiss_driver_rx(void * user_data, uint8_t * data, size_t data_size, void * pxTaskWoken) {
