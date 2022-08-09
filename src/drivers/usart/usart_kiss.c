@@ -31,8 +31,9 @@ typedef struct {
 	csp_iface_t iface;
 	csp_kiss_interface_data_t ifdata;
 	csp_usart_fd_t fd;
-	unsigned char txbuf[512];
 	size_t txbuf_index;
+	size_t txbuf_size;
+	unsigned char txbuf[];
 } kiss_context_t;
 
 static int kiss_driver_tx(void *driver_data, const unsigned char * data, size_t data_length) {
@@ -46,7 +47,7 @@ static int kiss_driver_tx(void *driver_data, const unsigned char * data, size_t 
 
 		/* Flush buffer on overflow or FEND (except FEND in first byte since
 		 * every KISS transmission starts with a FEND to flush receiver) */
-		if (ctx->txbuf_index >= sizeof(ctx->txbuf) || (data[i] == 0xC0 && ctx->txbuf_index > 1)) {
+		if (ctx->txbuf_index >= ctx->txbuf_size || (data[i] == 0xC0 && ctx->txbuf_index > 1)) {
 			write_length = ctx->txbuf_index;
 			ctx->txbuf_index = 0;
 			if (csp_usart_write(ctx->fd, ctx->txbuf, write_length) != (int) write_length) {
@@ -73,10 +74,20 @@ int csp_usart_open_and_add_kiss_interface(const csp_usart_conf_t *conf, const ch
 	csp_log_info("INIT %s: device: [%s], bitrate: %d",
 			ifname, conf->device, conf->baudrate);
 
-	kiss_context_t * ctx = csp_calloc(1, sizeof(*ctx));
+	/*
+	 * Calculate maximum KISS transmission size
+	 * Max input data = CSP header + data + KISS CRC
+	 * Multiply by 2 due to possible escaping
+	 * Add 2 bytes for start/end FEND
+	 */
+	size_t txbuf_size = (CSP_HEADER_LENGTH + csp_buffer_data_size() + sizeof(uint32_t)) * 2 + 2;
+
+	kiss_context_t * ctx = csp_calloc(1, sizeof(*ctx) + txbuf_size);
 	if (ctx == NULL) {
 		return CSP_ERR_NOMEM;
 	}
+
+	ctx->txbuf_size = txbuf_size;
 
 	strncpy(ctx->name, ifname, sizeof(ctx->name) - 1);
 	ctx->iface.name = ctx->name;
