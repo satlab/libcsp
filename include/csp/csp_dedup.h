@@ -22,6 +22,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define CSP_DEDUP_H_
 
 #include <csp/csp_types.h>
+ 
+/**
+ * Enable or disable deduplication
+ * @param enable enable deduplication if true
+ */
+void csp_dedup_enable(bool enable);
 
 /**
  * Check for a duplicate packet

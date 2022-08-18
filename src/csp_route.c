@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <csp/csp_crc32.h>
 #include <csp/csp_endian.h>
+#include <csp/csp_dedup.h>
 #include <csp/arch/csp_thread.h>
 #include <csp/arch/csp_queue.h>
 #include <csp/crypto/csp_hmac.h>
@@ -35,7 +36,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "csp_io.h"
 #include "csp_promisc.h"
 #include "csp_qfifo.h"
-#include "csp_dedup.h"
 #include "transport/csp_transport.h"
 
 /**

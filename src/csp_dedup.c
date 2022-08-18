@@ -18,7 +18,7 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "csp_dedup.h"
+#include <csp/csp_dedup.h>
 
 #include <stdlib.h>
 
@@ -35,9 +35,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 static uint32_t csp_dedup_array[CSP_DEDUP_COUNT] = {};
 static uint32_t csp_dedup_timestamp[CSP_DEDUP_COUNT] = {};
 static int csp_dedup_in = 0;
+static bool csp_dedup_enabled = true;
+
+void csp_dedup_enable(bool enable)
+{
+	csp_dedup_enabled = enable;
+}
 
 bool csp_dedup_is_duplicate(csp_packet_t *packet)
 {
+	/* If disabled, no packets are considered duplicates */
+	if (!csp_dedup_enabled)
+		return false;
+
 	/* Calculate CRC32 for packet */
 	uint32_t crc = csp_crc32_memory((const uint8_t *) &packet->id, packet->length + sizeof(packet->id));
 
