@@ -1010,10 +1010,12 @@ static PyObject* pycsp_packet_set_data(PyObject *self, PyObject *args) {
 
 static PyObject* pycsp_packet_get_data(PyObject *self, PyObject *packet_capsule) {
     csp_packet_t * packet = get_obj_as_packet(packet_capsule, false);
-    Py_ssize_t length = packet->length;
     if (packet == NULL) {
         return NULL; // TypeError is thrown
     }
+
+    Py_ssize_t length = packet->length;
+
     return Py_BuildValue("y#", packet->data, length);
 }
 
