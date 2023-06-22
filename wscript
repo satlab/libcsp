@@ -251,6 +251,7 @@ def build(ctx):
     if ctx.env.LIBCSP_PYTHON3:
         ctx.shlib(features='pyext',
                   source=ctx.path.ant_glob('src/bindings/python/**/*.c'),
+                  name='csp_python',
                   target='csp',
                   includes=ctx.env.INCLUDES_PYTHON3,
                   use=['csp_shlib'],
