@@ -123,9 +123,9 @@ static PyObject *CSPNode_ping(CSPNodeObject *self, PyObject *args, PyObject *kwd
 	unsigned int size = 10;
 	uint8_t options = CSP_O_NONE;
 
-	static char *kwlist[] = {"timeout", "size", "options", NULL};
+	static const char *kwlist[] = {"timeout", "size", "options", NULL};
 
-	if (!PyArg_ParseTupleAndKeywords(args, kwds, "|IIb", kwlist, &timeout, &size, &options))
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "|IIb", (char **)kwlist, &timeout, &size, &options))
 		return NULL;
 
 	Py_BEGIN_ALLOW_THREADS;
@@ -146,15 +146,15 @@ static PyObject *CSPNode_reboot(CSPNodeObject *self, PyObject *args)
 
 static int CSPNode_init(CSPNodeObject *self, PyObject *args, PyObject *kwds)
 {
-	static char *kwlist[] = {"addr", NULL};
-	if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist, &self->addr))
+	static const char *kwlist[] = {"addr", NULL};
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", (char **)kwlist, &self->addr))
 		return -1;
 
 	return 0;
 }
 
 static PyMethodDef CSPNode_methods[] = {
-	{"ping",   (PyCFunction)CSPNode_ping,   METH_VARARGS | METH_KEYWORDS, "Ping node"},
+	{"ping",   (PyCFunction)(void(*)(void))CSPNode_ping,   METH_VARARGS | METH_KEYWORDS, "Ping node"},
 	{"reboot", (PyCFunction)CSPNode_reboot, METH_NOARGS,                  "Reboot node"},
 	{NULL}  /* Sentinel */
 };
@@ -203,7 +203,7 @@ static PyObject* pycsp_init(PyObject *self, PyObject *args, PyObject *kwds) {
     csp_conf_t conf;
     csp_conf_get_defaults(&conf);
 
-    static char *kwlist[] = {
+    static const char *kwlist[] = {
         "address",
         "hostname",
         "model",
@@ -220,7 +220,7 @@ static PyObject* pycsp_init(PyObject *self, PyObject *args, PyObject *kwds) {
         "conn_dfl_so",
         NULL
     };
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|bsssssBBBBBHHI", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|bsssssBBBBBHHI", (char **)kwlist,
                                      &conf.address,
                                      &conf.hostname,
                                      &conf.model,
@@ -1049,7 +1049,8 @@ static PyMethodDef methods[] = {
 
     /* csp/csp.h */
     {"service_handler",     pycsp_service_handler,     METH_VARARGS, ""},
-    {"init",                (PyCFunction)pycsp_init,   METH_VARARGS | METH_KEYWORDS, ""},
+    {"init",                (PyCFunction)(void(*)(void))
+                            pycsp_init,                METH_VARARGS | METH_KEYWORDS, ""},
     {"get_hostname",        pycsp_get_hostname,        METH_NOARGS,  ""},
     {"get_model",           pycsp_get_model,           METH_NOARGS,  ""},
     {"get_revision",        pycsp_get_revision,        METH_NOARGS,  ""},
