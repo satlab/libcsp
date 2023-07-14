@@ -256,6 +256,7 @@ def build(ctx):
                   includes=ctx.env.INCLUDES_PYTHON3,
                   use=['csp_shlib'],
                   lib=ctx.env.LIBS,
+                  rpath=ctx.env.LIBDIR,
                   pytest_path=[ctx.path.get_bld()])
 
     if ctx.env.ENABLE_CSPERF_TOOL:
