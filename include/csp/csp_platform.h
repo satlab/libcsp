@@ -27,11 +27,12 @@ extern "C" {
 
 #include <stdint.h>
 
+#define CSP_MAX_DELAY (UINT32_MAX)
+#define CSP_INFINITY (UINT32_MAX)
+
 /* Set OS */
 #if defined(CSP_POSIX) || defined(CSP_WINDOWS) || defined(CSP_MACOSX)
 	#define CSP_BASE_TYPE int
-	#define CSP_MAX_DELAY (UINT32_MAX)
-	#define CSP_INFINITY (UINT32_MAX)
 	#define CSP_DEFINE_CRITICAL(lock) static csp_bin_sem_handle_t lock
 	#define CSP_INIT_CRITICAL(lock) ({(csp_bin_sem_create(&lock) == CSP_SEMAPHORE_OK) ? CSP_ERR_NONE : CSP_ERR_NOMEM;})
 	#define CSP_ENTER_CRITICAL(lock) do { csp_bin_sem_wait(&lock, CSP_MAX_DELAY); } while(0)
@@ -39,8 +40,6 @@ extern "C" {
 #elif defined(CSP_FREERTOS)
 	#include "FreeRTOS.h"
 	#define CSP_BASE_TYPE portBASE_TYPE
-	#define CSP_MAX_DELAY portMAX_DELAY
-	#define CSP_INFINITY portMAX_DELAY
 	#define CSP_DEFINE_CRITICAL(lock)
 	#define CSP_INIT_CRITICAL(lock) ({CSP_ERR_NONE;})
 	#define CSP_ENTER_CRITICAL(lock) do { portENTER_CRITICAL(); } while (0)
