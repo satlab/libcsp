@@ -597,6 +597,26 @@ static PyObject* pycsp_shutdown(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
+static PyObject* pycsp_uptime(PyObject *self, PyObject *args) {
+    uint8_t node;
+    uint32_t timeout = 1000;
+    if (!PyArg_ParseTuple(args, "b|I", &node, &timeout)) {
+        return NULL; // TypeError is thrown
+    }
+
+    int res;
+    uint32_t uptime;
+    Py_BEGIN_ALLOW_THREADS;
+    res = csp_get_uptime(node, timeout, &uptime);
+    Py_END_ALLOW_THREADS;
+
+    if (res < 0) {
+        return PyErr_Error("csp_get_uptime()", res);
+    }
+
+    return Py_BuildValue("I", uptime);
+}
+
 static PyObject* pycsp_rdp_set_opt(PyObject *self, PyObject *args) {
     unsigned int window_size;
     unsigned int conn_timeout_ms;
@@ -1073,6 +1093,7 @@ static PyMethodDef methods[] = {
     {"ping",                pycsp_ping,                METH_VARARGS, ""},
     {"reboot",              pycsp_reboot,              METH_VARARGS, ""},
     {"shutdown",            pycsp_shutdown,            METH_VARARGS, ""},
+    {"uptime",              pycsp_uptime,              METH_VARARGS, ""},
     {"rdp_set_opt",         pycsp_rdp_set_opt,         METH_VARARGS, ""},
     {"rdp_get_opt",         pycsp_rdp_get_opt,         METH_NOARGS,  ""},
     {"xtea_set_key",        pycsp_xtea_set_key,        METH_VARARGS, ""},
