@@ -25,8 +25,8 @@ http://code.google.com/p/c-pthread-queue/
 
 #include <csp/arch/posix/pthread_queue.h>
 
-#include <errno.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <csp/arch/csp_malloc.h>
 
@@ -122,7 +122,7 @@ static inline int wait_slot_available(pthread_queue_t * queue, struct timespec *
 			ret = pthread_cond_wait(&(queue->cond_full), &(queue->mutex));
 		}
 
-		if (ret != 0 && errno != EINTR) {
+		if (ret != 0) {
 			return PTHREAD_QUEUE_FULL; //Timeout
 		}
 	}
@@ -181,7 +181,7 @@ static inline int wait_item_available(pthread_queue_t * queue, struct timespec *
 			ret = pthread_cond_wait(&(queue->cond_empty), &(queue->mutex));
 		}
 
-		if (ret != 0 && errno != EINTR) {
+		if (ret != 0) {
 			return PTHREAD_QUEUE_EMPTY; //Timeout
 		}
 	}
